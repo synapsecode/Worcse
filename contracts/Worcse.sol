@@ -1,21 +1,68 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-contract Worcse {
-    string public greeting;
+contract WorcseContract {
+    address public buyer;
+    address public seller;
+    address public escrowAgent;
 
-    // Constructor to set the initial greeting when the contract is deployed
-    constructor(string memory initialGreeting) {
-        greeting = initialGreeting;
+    uint256 public amount;
+    bool public isFundsReleased;
+    bool public isRefunded;
+
+    event FundsDeposited(address indexed depositor, uint256 amount);
+    event FundsReleased(address indexed receiver, uint256 amount);
+    event FundsRefunded(address indexed refundReceiver, uint256 amount);
+
+    constructor(address _buyer, address _seller) {
+        buyer = _buyer;
+        seller = _seller;
+        escrowAgent = msg.sender;
     }
 
-    // Function to get the current greeting
-    function getGreeting() public view returns (string memory) {
-        return greeting;
+    function depositFunds() external payable onlyBuyer fundsNotReleased fundsNotRefunded {
+        amount += msg.value;
+        emit FundsDeposited(msg.sender, msg.value);
     }
 
-    // Function to set a new greeting
-    function setGreeting(string memory _newGreeting) public {
-        greeting = _newGreeting;
+    function releaseFunds() external onlyEscrowAgent fundsNotRefunded {
+        require(isFundsReleased == false, "Funds have already been released");
+        payable(seller).transfer(amount);
+        isFundsReleased = true;
+        emit FundsReleased(seller, amount);
+    }
+
+    function refundFunds() external onlyEscrowAgent fundsNotReleased {
+        require(isRefunded == false, "Funds have already been refunded");
+        payable(buyer).transfer(amount);
+        isRefunded = true;
+        emit FundsRefunded(buyer, amount);
+    }
+
+    // ====================== Modifiers ===================
+
+    modifier onlyBuyer() {
+        require(msg.sender == buyer, "Only the buyer can call this function");
+        _;
+    }
+
+    modifier onlySeller() {
+        require(msg.sender == seller, "Only the seller can call this function");
+        _;
+    }
+
+    modifier onlyEscrowAgent() {
+        require(msg.sender == escrowAgent, "Only the escrow agent can call this function");
+        _;
+    }
+
+    modifier fundsNotReleased() {
+        require(!isFundsReleased, "Funds have already been released");
+        _;
+    }
+
+    modifier fundsNotRefunded() {
+        require(!isRefunded, "Funds have already been refunded");
+        _;
     }
 }

@@ -12,7 +12,7 @@ describe("Escrow Contract", function () {
     // Deploy the contract before each test
     beforeEach(async function () {
         [owner, member1, member2] = await ethers.getSigners();
-        const WorcseContract = await ethers.getContractFactory("Worcse");
+        const WorcseContract = await ethers.getContractFactory("WorcseContract");
         const arglist = [
             "Hello World"
         ];

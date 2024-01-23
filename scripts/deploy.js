@@ -4,11 +4,11 @@ async function main() {
   const argslist = [
     "Hello World"
   ];
-  const contract = await hre.ethers.deployContract("Worcse", argslist);
+  const contract = await hre.ethers.deployContract("WorcseContract", argslist);
   await contract.waitForDeployment();
 
   console.log(
-    `Contract(Worcse) with deployed to ${contract.target}`
+    `Contract(WorcseContract) with deployed to ${contract.target}`
   );
 }
 
